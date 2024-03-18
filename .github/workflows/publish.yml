@@ -20,9 +20,6 @@ jobs:
         run: |
           curl -o api_response.json -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/koreader/koreader/releases/latest"
 
-      - name: Debug step
-        run: cat api_response.json
-
       - name: Get KOReader download url
         uses: sergeysova/jq-action@v2
         id: koreader_version
@@ -47,6 +44,6 @@ jobs:
         with:
           context: .
           build-args: |
-            KOREADER_DOWNLOAD_URL="${{ steps.koreader_version.outputs.value }}"
+            KOREADER_DOWNLOAD_URL=${{ steps.koreader_version.outputs.value }}
           push: true
           tags: ghcr.io/${{ github.actor }}/koreader:latest
