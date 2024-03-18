@@ -17,7 +17,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Get KOReader latest release
-        run: curl -o api_response.json "https://api.github.com/repos/koreader/koreader/releases/latest?access_token=${{ secrets.GITHUB_TOKEN }}"
+        run: |
+          curl -o api_response.json -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/koreader/koreader/releases/latest"
 
       - name: Debug step
         run: cat api_response.json
