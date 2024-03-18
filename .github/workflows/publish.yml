@@ -22,9 +22,15 @@ jobs:
 
       - name: Get KOReader download url
         uses: sergeysova/jq-action@v2
-        id: koreader_version
+        id: koreader_url
         with:
           cmd: jq -r '.assets[] | select( .name | contains("amd64.deb") ) | .browser_download_url' api_response.json
+
+      - name: Get KOReader version
+        uses: sergeysova/jq-action@v2
+        id: koreader_version
+        with:
+          cmd: jq -r '.tag_name | sub("^v"; "")' api_response.json
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -44,6 +50,8 @@ jobs:
         with:
           context: .
           build-args: |
-            KOREADER_DOWNLOAD_URL=${{ steps.koreader_version.outputs.value }}
+            KOREADER_DOWNLOAD_URL=${{ steps.koreader_url.outputs.value }}
           push: true
-          tags: ghcr.io/${{ github.actor }}/koreader:latest
+          tags: |
+            ghcr.io/${{ github.actor }}/koreader:latest
+            ghcr.io/${{ github.actor }}/koreader:${{ steps.koreader_version.outputs.value }}
