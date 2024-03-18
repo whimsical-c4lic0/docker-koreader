@@ -19,6 +19,9 @@ jobs:
       - name: Get KOReader latest release
         run: curl -o api_response.json "https://api.github.com/repos/koreader/koreader/releases/latest?access_token=${{ secrets.GITHUB_TOKEN }}"
 
+      - name: Debug step
+        run: cat api_response.json
+
       - name: Get KOReader download url
         uses: sergeysova/jq-action@v2
         id: koreader_version
