@@ -1,0 +1,48 @@
+name: Publish Docker image
+
+on:
+  push:
+    branches:
+      - 'main'
+  schedule:
+    - cron: 0 0 * * 0  # Weekly
+  workflow_dispatch:
+
+jobs:
+  push_to_registry:
+    name: Push docker image to registry
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get KOReader latest release
+        run: curl -o api_response.json "https://api.github.com/repos/koreader/koreader/releases/latest?access_token=${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Get KOReader download url
+        uses: sergeysova/jq-action@v2
+        id: koreader_version
+        with:
+          cmd: jq -r '.assets[] | select( .name | contains("amd64.deb") ) | .browser_download_url' api_response.json
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to ghcr
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          build-args: |
+            KOREADER_DOWNLOAD_URL="${{ steps.koreader_version.outputs.value }}"
+          push: true
+          tags: ghcr.io/${{ github.actor }}/koreader:latest
